@@ -35,8 +35,8 @@ static void scheduler__send_telegram(const char* message, MessageMetadata metada
 }
 
 static SchedulerSendCallback send_callbacks[] = {
-	[MESSAGE_FLAG_INDEX_EMAIL] = scheduler__send_email,
 	[MESSAGE_FLAG_INDEX_TELEGRAM] = scheduler__send_telegram,
+	[MESSAGE_FLAG_INDEX_EMAIL] = scheduler__send_email,
 };
 
 static void *scheduler__thread(void* ptr)
@@ -49,7 +49,7 @@ static void *scheduler__thread(void* ptr)
 		uint32_t flag = 1 << i;
 
 		if (flag & message->type) {
-			send_callbacks[flag](message->message, message->metadata);
+			send_callbacks[i](message->message, message->metadata);
 		}
 	}
 
