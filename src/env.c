@@ -12,6 +12,10 @@ static Env env = {0};
 void env_load(const char *filepath)
 {
 	FILE* file = fopen(filepath, "r");
+	if (file == NULL) {
+		fprintf(stderr, "Error: Make sure that `%s` exists\n", filepath);
+		exit(1);
+	}
 
 	size_t buffer_size = 0xff;
 	char* buffer = malloc(buffer_size);
