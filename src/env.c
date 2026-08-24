@@ -46,3 +46,12 @@ void env_load(const char *filepath)
 	idx = map_get_node_index(&env, "EMAIL_USERNAME");
 	printf("idx: %i\n", idx);
 }
+
+char* env_get_key(const char* key)
+{
+	int32_t idx = map_get_node_index(&env, key);
+	if (idx != -1) {
+		return env.items[idx].value;
+	}
+	return NULL;
+}
