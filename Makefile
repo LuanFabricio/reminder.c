@@ -2,8 +2,8 @@ BUILD_FOLDER := build
 TARGET := $(BUILD_FOLDER)/main
 DEBUGGER = gf2
 CC = gcc
-CINCLUDES = -Iinclude
-CLINKS = -lm -lpthread -lcurl
+CINCLUDES = -Iinclude -Llibs
+CLINKS = -lm -lpthread -lcurl -ltelebot -ljson-c
 CFLAGS := $(CINCLUDES) $(CLINKS) -ggdb
 
 SRC_DIR := src/
