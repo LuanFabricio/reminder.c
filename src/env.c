@@ -22,7 +22,6 @@ void env_load(const char *filepath)
 	while(getline(&buffer, &buffer_size, file) > 1) {
 		String_View sv = sv_from_cstr(buffer);
 		sv_trim(&sv);
-		printf("sv: "SV_FORMAT"\n", SV_PRINT(sv));
 		String_View_List svl = sv_split_n(sv, '=', 1);
 
 		assert(svl.size == 2);
@@ -38,17 +37,6 @@ void env_load(const char *filepath)
 	}
 	free(buffer);
 	fclose(file);
-
-	for (int32_t i = 0; i < env.size; i++) {
-		Node n = env.items[i];
-		printf("[%02u] %s=%s \n", i, n.key, n.value);
-	}
-	int32_t idx = map_get_node_index(&env, "DISCORD_TOKEN");
-	printf("idx: %i\n", idx);
-	idx = map_get_node_index(&env, "EMAIL_PWD");
-	printf("idx: %i\n", idx);
-	idx = map_get_node_index(&env, "EMAIL_USERNAME");
-	printf("idx: %i\n", idx);
 }
 
 char* env_get_key(const char* key)
