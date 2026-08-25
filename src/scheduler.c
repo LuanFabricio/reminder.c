@@ -1,4 +1,3 @@
-#include <math.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,6 +6,7 @@
 #include <unistd.h>
 
 #include "scheduler.h"
+#include "telegram.h"
 
 
 typedef void (*SchedulerSendCallback)(const char*, MessageMetadata);
@@ -32,6 +32,7 @@ static void scheduler__send_telegram(const char* message, MessageMetadata metada
 		stdout,
 		"Telegram message to %ld with the message: \n\t%s\n",
 		metadata.telegram.chat_id, message);
+	telegram_send_message(message, metadata);
 }
 
 static SchedulerSendCallback send_callbacks[] = {

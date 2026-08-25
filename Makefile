@@ -3,7 +3,7 @@ TARGET := $(BUILD_FOLDER)/main
 DEBUGGER = gf2
 CC = gcc
 CINCLUDES = -Iinclude -Llibs
-CLINKS = -lm -lpthread -lcurl -ltelebot -ljson-c
+CLINKS = -lpthread -lcurl -ltelebot -ljson-c
 CFLAGS := $(CINCLUDES) $(CLINKS) -ggdb
 
 SRC_DIR := src/

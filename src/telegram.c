@@ -1,20 +1,24 @@
-#include "telegram.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <telebot/telebot-common.h>
+#include <unistd.h>
+
+#include "telebot/telebot.h"
 
 #include "env.h"
 #include "scheduler.h"
-#include "telebot/telebot-types.h"
-#include "telebot/telebot.h"
-#include <stdio.h>
-#include <telebot/telebot-common.h>
-#include <unistd.h>
+#include "telegram.h"
 
 static telebot_handler_t *handler = NULL;
 
 void telegram__start()
 {
+	handler = malloc(sizeof(*handler));
 	char* token = env_get_key("TELEGRAM_TOKEN");
 
-	if (telebot_create(handler, token) != TELEBOT_ERROR_NONE) {
+	telebot_error_e err = telebot_create(handler, token);
+	if (err != TELEBOT_ERROR_NONE) {
 		printf("Telebot create failed.\n");
 		return;
 	}
