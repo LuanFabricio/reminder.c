@@ -59,7 +59,7 @@ String_View_List sv_split_n(const String_View sv, const char c, uint32_t n)
 		}
 
 		i++;
-	} while(i < sv.size && svl.size < splits);
+	} while(i < sv.size && svl.size < splits - 1);
 	sv__append_svl(sv, &svl, sv.size, last_c_index);
 
 	return svl;
