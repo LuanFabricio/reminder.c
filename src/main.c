@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -7,6 +8,7 @@
 #include "dynamic_array.h"
 #include "env.h"
 #include "scheduler.h"
+#include "telegram.h"
 
 da_create(int) int_list;
 
@@ -35,9 +37,12 @@ int main(int argc, char** argv)
 	strncpy(message.message, "Scheduler test 2!", sizeof(message.message));
 	scheduler_create(message);
 
+	pthread_t telegram_pthread;
+	pthread_create(&telegram_pthread, NULL, telegram_thread, NULL);
+
 	// asm("int3");
 
-	for(;;) { sleep(5); }
+	for(;;) {}
 
 	return 0;
 }
