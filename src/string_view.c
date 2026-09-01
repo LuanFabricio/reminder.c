@@ -1,8 +1,12 @@
+#include <assert.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "string_view.h"
+
+#define MAX_BUFFER_SIZE 1024
 
 String_View sv_from_cstr(const char* cstr)
 {
@@ -95,4 +99,15 @@ void sv_trim(String_View *sv)
 	free(sv->content);
 	sv->content = new_content;
 	sv->size = size;
+}
+
+bool svl_start_with_cstr(const String_View_List svl, const char* cstr)
+{
+	assert(svl.size >= 1);
+	assert(svl.sv[0].size < MAX_BUFFER_SIZE);
+
+	char buffer[MAX_BUFFER_SIZE];
+	snprintf(buffer, sizeof(buffer), SV_FORMAT, SV_PRINT(svl.sv[0]));
+
+	return strncmp(buffer, cstr, sizeof(buffer)) == 0;
 }
