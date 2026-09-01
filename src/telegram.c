@@ -18,7 +18,9 @@
 static void telegram__setup_commands(telebot_handler_t handler)
 {
 	telebot_bot_command_t commands[] = {
-		{"remind", "Adds a reminder."},
+		{"remind", "Adds a reminder to send a telegram message and an e-mail."},
+		{"remind_telegram", "Adds a reminder to send a telegram message."},
+		{"remind_email", "Adds a reminder to send a e-mail message."},
 		{"info", "Get chat info"}
 	};
 	int commands_size = sizeof(commands) / sizeof(commands[0]);
@@ -54,9 +56,9 @@ static void telegram__handle_message(telebot_handler_t handler, telebot_message_
 
 	if (svl_start_with_cstr(svl, "/remind")) {
 		message.type = MESSAGE_FLAG_EMAIL | MESSAGE_FLAG_TELEGRAM;
-	} else if (svl_start_with_cstr(svl, "/remind-telegram")) {
+	} else if (svl_start_with_cstr(svl, "/remind_telegram")) {
 		message.type = MESSAGE_FLAG_TELEGRAM;
-	}else if (svl_start_with_cstr(svl, "/remind-email")) {
+	}else if (svl_start_with_cstr(svl, "/remind_email")) {
 		message.type = MESSAGE_FLAG_EMAIL;
 	}
 
