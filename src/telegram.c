@@ -35,6 +35,11 @@ static void telegram__handle_message(telebot_handler_t handler, telebot_message_
 		return;
 	}
 
+	char* msg_ptr = strstr(msg->text, "/remind");
+	if (msg_ptr == NULL || msg_ptr != msg->text) {
+		return;
+	}
+
 	printf("Message from %s: %s\n", msg->from->first_name, msg->text);
 	String_View sv = sv_from_cstr(msg->text);
 	String_View_List svl = sv_split_n(sv, ' ', 2);
@@ -45,21 +50,30 @@ static void telegram__handle_message(telebot_handler_t handler, telebot_message_
 
 	SchedulerMessage message = {
 		.delay = delay,
-		.type = MESSAGE_FLAG_TELEGRAM | MESSAGE_FLAG_EMAIL,
-		.metadata = {
-			.telegram = {
-				.chat_id = msg->chat->id,
-			},
-			.email = {
-				.subject = "Reminder",
-			},
-		},
 	};
 
-	strncpy(
-		message.metadata.email.to,
-		env_get_key("EMAIL_TO_ADDR"),
-		sizeof(message.metadata.email.to));
+	if (svl_start_with_cstr(svl, "/remind")) {
+		message.type = MESSAGE_FLAG_EMAIL | MESSAGE_FLAG_TELEGRAM;
+	} else if (svl_start_with_cstr(svl, "/remind-telegram")) {
+		message.type = MESSAGE_FLAG_TELEGRAM;
+	}else if (svl_start_with_cstr(svl, "/remind-email")) {
+		message.type = MESSAGE_FLAG_EMAIL;
+	}
+
+	if (message.type & MESSAGE_FLAG_TELEGRAM) {
+		message.metadata.telegram.chat_id = msg->chat->id;
+	}
+
+	if (message.type & MESSAGE_FLAG_EMAIL) {
+		strncpy(
+			message.metadata.email.subject,
+			"Reminder",
+			sizeof(message.metadata.email.subject));
+		strncpy(
+			message.metadata.email.to,
+			env_get_key("EMAIL_TO_ADDR"),
+			sizeof(message.metadata.email.to));
+	}
 
 	String_View sv_msg = svl.sv[svl.size-1];
 	snprintf(message.message, sizeof(message.message), SV_FORMAT, SV_PRINT(sv_msg));
