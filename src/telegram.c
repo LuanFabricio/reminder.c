@@ -45,14 +45,21 @@ static void telegram__handle_message(telebot_handler_t handler, telebot_message_
 
 	SchedulerMessage message = {
 		.delay = delay,
-		.type = MESSAGE_FLAG_TELEGRAM,
+		.type = MESSAGE_FLAG_TELEGRAM | MESSAGE_FLAG_EMAIL,
 		.metadata = {
 			.telegram = {
 				.chat_id = msg->chat->id,
 			},
-			.email = {0},
-		}
+			.email = {
+				.subject = "Reminder",
+			},
+		},
 	};
+
+	strncpy(
+		message.metadata.email.to,
+		env_get_key("EMAIL_TO_ADDR"),
+		sizeof(message.metadata.email.to));
 
 	String_View sv_msg = svl.sv[svl.size-1];
 	snprintf(message.message, sizeof(message.message), SV_FORMAT, SV_PRINT(sv_msg));

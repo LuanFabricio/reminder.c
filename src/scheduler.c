@@ -7,6 +7,7 @@
 
 #include "scheduler.h"
 #include "telegram.h"
+#include "email.h"
 
 
 typedef void (*SchedulerSendCallback)(const char*, MessageMetadata);
@@ -19,6 +20,7 @@ static void scheduler__send_email(const char* message, MessageMetadata metadata)
 	}
 
 	fprintf(stdout, "E-Mail to %s with the message: \n\t%s\n", metadata.email.to, message);
+	email_send(message, metadata);
 }
 
 static void scheduler__send_telegram(const char* message, MessageMetadata metadata)
