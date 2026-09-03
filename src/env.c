@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 static Env env = {0};
@@ -46,4 +47,21 @@ char* env_get_key(const char* key)
 		return env.items[idx].value;
 	}
 	return NULL;
+}
+
+String_View_List env_get_keys()
+{
+	String_View_List svl = {0};
+	svl.size = env.size;
+	svl.sv = malloc(sizeof(*svl.sv));
+
+	for (uint32_t i = 0; i < env.size; i++) {
+		const char* key = env.items[i].key;
+		String_View *sv = &(svl.sv[i]);
+		sv->size = strlen(key);
+		sv->content = malloc(sv->size);
+		memcpy(sv->content, key, sv->size);
+	}
+
+	return svl;
 }
