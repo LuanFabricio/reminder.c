@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -6,6 +7,8 @@
 #include <unistd.h>
 
 #include "scheduler.h"
+#include "log.h"
+#include "discord.h"
 #include "telegram.h"
 #include "email.h"
 
@@ -37,9 +40,25 @@ static void scheduler__send_telegram(const char* message, MessageMetadata metada
 	telegram_send_message(message, metadata);
 }
 
+static void scheduler__send_discord(const char* message, MessageMetadata metadata)
+{
+	if (metadata.discord.chat_id == 0) {
+		log_format(stderr, LOG_LABEL_ERROR, "Discord metadata is empty");
+		return;
+	}
+
+	log_format(
+		stdout,
+		LOG_LABEL_INFO,
+		"Discord message to %lu with the message:\n\t%s\n",
+		metadata.discord.chat_id, message);
+	discord_send_message(message, metadata);
+}
+
 static SchedulerSendCallback send_callbacks[] = {
 	[MESSAGE_FLAG_INDEX_TELEGRAM] = scheduler__send_telegram,
 	[MESSAGE_FLAG_INDEX_EMAIL] = scheduler__send_email,
+	[MESSAGE_FLAG_INDEX_DISCORD] = scheduler__send_discord,
 };
 
 static void *scheduler__thread(void* ptr)
@@ -48,6 +67,7 @@ static void *scheduler__thread(void* ptr)
 
 	sleep(message->delay);
 
+	assert((sizeof(send_callbacks)/sizeof(send_callbacks[0])) == MESSAGE_FLAG_INDEX_LAST);
 	for (uint32_t i = 0; i < MESSAGE_FLAG_INDEX_LAST; i++) {
 		uint32_t flag = 1 << i;
 

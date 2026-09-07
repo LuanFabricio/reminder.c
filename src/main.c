@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "dynamic_array.h"
+#include "discord.h"
 #include "env.h"
 #include "telegram.h"
 
@@ -15,6 +16,8 @@ int main(int argc, char** argv)
 
 	pthread_t telegram_pthread;
 	pthread_create(&telegram_pthread, NULL, telegram_thread, NULL);
+	pthread_t discord_pthread;
+	pthread_create(&discord_pthread, NULL, discord_thread, NULL);
 
 	// asm("int3");
 

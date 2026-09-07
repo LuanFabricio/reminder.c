@@ -4,12 +4,14 @@
 typedef enum {
 	MESSAGE_FLAG_INDEX_TELEGRAM = 0,
 	MESSAGE_FLAG_INDEX_EMAIL,
+	MESSAGE_FLAG_INDEX_DISCORD,
 	MESSAGE_FLAG_INDEX_LAST,
 } MessageFlagsIndex;
 
 typedef enum {
 	MESSAGE_FLAG_TELEGRAM 	= 1 << MESSAGE_FLAG_INDEX_TELEGRAM,
 	MESSAGE_FLAG_EMAIL 	= 1 << MESSAGE_FLAG_INDEX_EMAIL,
+	MESSAGE_FLAG_DISCORD 	= 1 << MESSAGE_FLAG_INDEX_DISCORD,
 	MESSAGE_FLAG_LAST	= 1 << MESSAGE_FLAG_INDEX_LAST,
 } MessageFlags;
 
@@ -27,8 +29,13 @@ typedef struct {
 } MessageMetadataTelegram;
 
 typedef struct {
+	uint64_t chat_id;
+} MessageMetadataDiscord;
+
+typedef struct {
 	MessageMetadataEmail email;
 	MessageMetadataTelegram telegram;
+	MessageMetadataDiscord discord;
 } MessageMetadata;
 
 typedef struct {
