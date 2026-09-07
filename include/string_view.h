@@ -19,6 +19,7 @@ typedef struct {
 String_View sv_from_cstr(const char* cstr);
 uint32_t sv_count_char(const String_View sv, const char c);
 String_View_List sv_split_n(const String_View sv, const char c, uint32_t n);
-void svl_free(String_View_List* svl);
 void sv_trim(String_View *sv);
+bool sv_is_num(const String_View sv);
+void svl_free(String_View_List* svl);
 bool svl_start_with_cstr(const String_View_List svl, const char* cstr);

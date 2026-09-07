@@ -30,6 +30,45 @@ uint32_t sv_count_char(const String_View sv, const char c)
 	return count;
 }
 
+void sv_trim(String_View *sv)
+{
+	char *content = sv->content;
+	uint32_t size = sv->size;
+	for (int32_t i = 0; i < size; i++, content++, size--) {
+		const char c = *content;
+		if (c != '\n' && c != ' ') {
+			break;
+		}
+	}
+
+	for (uint32_t i = size-1; i >= 0; i--, size--){
+		const char c = content[i];
+		if (c != '\n' && c != ' ') {
+			break;
+		}
+	}
+	char* new_content = malloc(size);
+	memcpy(new_content, content, size);
+
+	free(sv->content);
+	sv->content = new_content;
+	sv->size = size;
+}
+
+bool sv_is_num(const String_View sv)
+{
+	for (uint32_t i = 0; i < sv.size; i++) {
+		const char c = sv.content[i];
+		const bool is_num =  c >= '0' || c <= '9';
+		const bool is_signal = c == '+' || c == '-';
+		if (!is_num && !is_signal) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 static void sv__append_svl(const String_View sv, String_View_List *svl, const uint32_t i, const uint32_t last_c_index)
 {
 
@@ -74,31 +113,6 @@ void svl_free(String_View_List* svl)
 	for (uint32_t i = 0; i < svl->size; i++) {
 		free(svl->sv[i].content);
 	}
-}
-
-void sv_trim(String_View *sv)
-{
-	char *content = sv->content;
-	uint32_t size = sv->size;
-	for (int32_t i = 0; i < size; i++, content++, size--) {
-		const char c = *content;
-		if (c != '\n' && c != ' ') {
-			break;
-		}
-	}
-
-	for (uint32_t i = size-1; i >= 0; i--, size--){
-		const char c = content[i];
-		if (c != '\n' && c != ' ') {
-			break;
-		}
-	}
-	char* new_content = malloc(size);
-	memcpy(new_content, content, size);
-
-	free(sv->content);
-	sv->content = new_content;
-	sv->size = size;
 }
 
 bool svl_start_with_cstr(const String_View_List svl, const char* cstr)
