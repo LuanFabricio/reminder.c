@@ -18,23 +18,23 @@ typedef void (*SchedulerSendCallback)(const char*, MessageMetadata);
 static void scheduler__send_email(const char* message, MessageMetadata metadata)
 {
 	if (strlen(metadata.email.to) == 0) {
-		fprintf(stderr, "E-Mail metadata is a null pointer");
+		log_format(stderr, LOG_LABEL_ERROR, "E-Mail metadata is a null pointer");
 		return;
 	}
 
-	fprintf(stdout, "E-Mail to %s with the message: \n\t%s\n", metadata.email.to, message);
+	log_format(stdout, LOG_LABEL_INFO, "E-Mail to %s with the message: \n\t%s\n", metadata.email.to, message);
 	email_send(message, metadata);
 }
 
 static void scheduler__send_telegram(const char* message, MessageMetadata metadata)
 {
 	if (metadata.telegram.chat_id == 0) {
-		fprintf(stderr, "E-Mail metadata is a null pointer");
+		log_format(stderr, LOG_LABEL_ERROR, "E-Mail metadata is a null pointer");
 		return;
 	}
 
-	fprintf(
-		stdout,
+	log_format(
+		stdout, LOG_LABEL_INFO,
 		"Telegram message to %ld with the message: \n\t%s\n",
 		metadata.telegram.chat_id, message);
 	telegram_send_message(message, metadata);
