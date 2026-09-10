@@ -16,16 +16,7 @@ static struct discord* handler = NULL;
 
 void discord__start_handler()
 {
-	struct discord_config config = {
-		.base_url = NULL,
-		.log = {
-			.level = LOGMOD_LEVEL_WARN,
-			.color = true,
-		},
-		.token = env_get_key("DISCORD_TOKEN"),
-	};
-
-	handler = discord_from_config(&config);
+	handler = discord_init(env_get_key("DISCORD_TOKEN"));
 }
 
 void discord_send_message(const char* message, MessageMetadata metadta)
