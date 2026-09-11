@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <libpq-fe.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -6,11 +7,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "scheduler.h"
-#include "log.h"
+#include "database.h"
 #include "discord.h"
-#include "telegram.h"
 #include "email.h"
+#include "log.h"
+#include "scheduler.h"
+#include "telegram.h"
 
 
 typedef void (*SchedulerSendCallback)(const char*, MessageMetadata);
@@ -64,6 +66,10 @@ static SchedulerSendCallback send_callbacks[] = {
 static void *scheduler__thread(void* ptr)
 {
 	SchedulerMessage *message = ptr;
+
+	PGconn *conn = database_connect();
+	database_insert_remind(conn, *message);
+	database_disconnect(conn);
 
 	sleep(message->delay);
 
