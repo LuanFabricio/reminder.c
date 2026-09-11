@@ -1,19 +1,25 @@
+#include <libpq-fe.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>
 
+#include "database.h"
 #include "dynamic_array.h"
 #include "discord.h"
 #include "env.h"
+#include "scheduler.h"
 #include "telegram.h"
-
-da_create(int) int_list;
 
 int main(int argc, char** argv)
 {
 	env_load(".env");
 
+	PGconn *conn = database_connect();
+	database_setup(conn);
+
+	pthread_t scheduler_thread;
+	pthread_create(&scheduler_thread, NULL, scheduler_database_check, NULL);
 	pthread_t telegram_pthread;
 	pthread_create(&telegram_pthread, NULL, telegram_thread, NULL);
 	pthread_t discord_pthread;

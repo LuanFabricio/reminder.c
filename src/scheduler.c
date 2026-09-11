@@ -96,3 +96,21 @@ void scheduler_create(SchedulerMessage message)
 
 	fprintf(stdout, "Message scheduled with %02u seconds of delay!\n", message.delay);
 }
+
+void* scheduler_database_check(void* ptr)
+{
+	PGconn* conn = database_connect();
+
+	const uint32_t delay_to_check = 60 * 5;
+
+	while(1) {
+		char* query = ""
+		"	delete from remind"
+		"	where (created_at + make_interval(secs => delay)) < current_timestamp;";
+		const PGresult *res = PQexec(conn, query);
+		PQprint(stdout, res, NULL);
+		sleep(delay_to_check);
+	}
+
+	database_disconnect(conn);
+}

@@ -46,3 +46,4 @@ typedef struct {
 } SchedulerMessage;
 
 void scheduler_create(SchedulerMessage message);
+void* scheduler_database_check(void* ptr);
