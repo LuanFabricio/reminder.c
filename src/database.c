@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 #include <libpq-fe.h>
 #include <string.h>
@@ -10,12 +9,13 @@
 
 #define TABLE_REMIND "remind"
 
-void database__setup(PGconn* conn)
+void database_setup(PGconn* conn)
 {
 #define CREATE_TABLE_REMIND \
 	"create table if not exists "TABLE_REMIND"("\
 	"	message text,"\
 	"	senders_flag int,"\
+	"	email_to varchar(100),"\
 	"	telegram_chat_id bigint,"\
 	"	discord_chat_id bigint,"\
 	"	delay int,"\
@@ -48,15 +48,23 @@ void database_insert_remind(PGconn* conn, SchedulerMessage message)
 	} else {
 		strcpy(discord_chat_id, "NULL");
 	}
+
+	char email_to[100];
+	if (message.type & MESSAGE_FLAG_EMAIL) {
+		snprintf(email_to, sizeof(email_to), "%s", message.metadata.email.to);
+	} else {
+		strcpy(email_to, "NULL");
+	}
 #define INSERT_TEMPLATE \
 	"insert into "TABLE_REMIND"("\
 	"	message,"\
 	"	senders_flag,"\
+	"	email_to,"\
 	"	telegram_chat_id,"\
 	"	discord_chat_id,"\
 	"	delay"\
 	")"\
-	"	values('%s', %d, %s, %s, %d);"
+	"	values('%s', %d, '%s', %s, %s, %d);"
 
 	char buffer[0xffff];
 	snprintf(
@@ -65,6 +73,7 @@ void database_insert_remind(PGconn* conn, SchedulerMessage message)
 		INSERT_TEMPLATE,
 		message.message,
 		message.type,
+		email_to,
 		telegram_chat_id,
 		discord_chat_id,
 		message.delay
@@ -75,48 +84,14 @@ void database_insert_remind(PGconn* conn, SchedulerMessage message)
 	PQprint(stdout, res, NULL);
 }
 
-void database_connect()
+PGconn* database_connect()
 {
-	// PGconn *conn = PQconnectdbParams(const char *const *keywords, const char *const *values, int expand_dbname);
 	char buffer[0xff];
-	snprintf(buffer, sizeof(buffer), "postgresql://%s:%s@localhost", env_get_key("DB_USERNAME"), env_get_key("DB_PWD"));
-	PGconn *conn = PQconnectdb(buffer);
+	snprintf(buffer, sizeof(buffer), "postgresql://%s:%s@%s", env_get_key("DB_USERNAME"), env_get_key("DB_PWD"), env_get_key("DB_HOST"));
+	return PQconnectdb(buffer);
+}
 
-	database__setup(conn);
-
-	SchedulerMessage msg = {
-		.message = "some message\nteste\n",
-		.type = MESSAGE_FLAG_DISCORD | MESSAGE_FLAG_TELEGRAM,
-		.metadata = {
-			.telegram = {
-				.chat_id = 1
-			},
-			.discord = {
-				.chat_id = 2
-			},
-		},
-		.delay = 32,
-	};
-	database_insert_remind(conn, msg);
-
-	int ret = PQsendQuery(conn, "select 1 as n;");
-	if (ret != 1) {
-		exit(1);
-	}
-
-	PGresult *res = NULL;
-
-	while ((res = PQgetResult(conn)) != NULL) {
-		PQprintTuples(res, stdout, 1, 0, 0);
-	}
-
-	ret = PQsendQuery(conn, "select * from remind;");
-	if (ret != 1) {
-		log_panic("Invalid return %s(%d)\n", PQerrorMessage(conn), ret);
-	}
-	while ((res = PQgetResult(conn)) != NULL) {
-		PQprintTuples(res, stdout, 1, 0, 0);
-	}
-
+void database_disconnect(PGconn* conn)
+{
 	PQfinish(conn);
 }
