@@ -95,3 +95,36 @@ void database_disconnect(PGconn* conn)
 {
 	PQfinish(conn);
 }
+
+void database_fetch_pending_messages()
+{
+	PGconn* conn = database_connect();
+
+#define QUERY ""\
+	"select"\
+	"	message,"\
+	"	senders_flag,"\
+	"	email_to,"\
+	"	telegram_chat_id,"\
+	"	discord_chat_id,"\
+	"	delay,"\
+	"	created_at"\
+	"from remind"
+
+	if (PQsendQuery(conn, QUERY) != 1) {
+		log_format(stdout, LOG_LABEL_ERROR, "Could not fetch `remind` table\n");
+		PQerrorMessage(conn);
+	}
+
+	PGresult *res = NULL;
+	int i = 0;
+	while ((res = PQgetResult(conn)) != NULL) {
+		assert(PQntuples(res) == 7);
+
+		SchedulerMessage msg = {0};
+		const char* message = PQgetvalue(res, i, 0);
+		strncpy(msg.message, message, sizeof(msg.message));
+	}
+
+	database_disconnect(conn);
+}
