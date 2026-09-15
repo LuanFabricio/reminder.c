@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef enum {
@@ -45,5 +46,5 @@ typedef struct {
 	MessageMetadata metadata;
 } SchedulerMessage;
 
-void scheduler_create(SchedulerMessage message);
+void scheduler_create(SchedulerMessage message, bool save_record);
 void* scheduler_database_check(void* ptr);

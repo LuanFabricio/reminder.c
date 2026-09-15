@@ -80,7 +80,7 @@ static void telegram__handle_message(telebot_handler_t handler, telebot_message_
 	String_View sv_msg = svl.sv[svl.size-1];
 	snprintf(message.message, sizeof(message.message), SV_FORMAT, SV_PRINT(sv_msg));
 
-	scheduler_create(message);
+	scheduler_create(message, true);
 }
 
 static void telegram__start(telebot_handler_t* handler)

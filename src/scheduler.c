@@ -67,10 +67,6 @@ static void *scheduler__thread(void* ptr)
 {
 	SchedulerMessage *message = ptr;
 
-	PGconn *conn = database_connect();
-	database_insert_remind(conn, *message);
-	database_disconnect(conn);
-
 	sleep(message->delay);
 
 	assert((sizeof(send_callbacks)/sizeof(send_callbacks[0])) == MESSAGE_FLAG_INDEX_LAST);
@@ -87,8 +83,14 @@ static void *scheduler__thread(void* ptr)
 	return NULL;
 }
 
-void scheduler_create(SchedulerMessage message)
+void scheduler_create(SchedulerMessage message, bool save_record)
 {
+	if (save_record) {
+		PGconn *conn = database_connect();
+		database_insert_remind(conn, message);
+		database_disconnect(conn);
+	}
+
 	pthread_t thread;
 	void* message_ptr = malloc(sizeof(message));
 	memcpy(message_ptr, &message, sizeof(message));

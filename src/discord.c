@@ -86,7 +86,7 @@ static void discord__on_remind(struct discord *handler, const struct discord_mes
 			scheduler_message.delay,
 			scheduler_message.message);
 
-		scheduler_create(scheduler_message);
+		scheduler_create(scheduler_message, true);
 	}
 }
 
