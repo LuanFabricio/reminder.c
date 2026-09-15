@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <libpq-fe.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "env.h"
@@ -108,9 +109,10 @@ void database_fetch_pending_messages()
 	"	telegram_chat_id,"\
 	"	discord_chat_id,"\
 	"	delay,"\
-	"	created_at"\
-	"from remind"
+	"	created_at "\
+	"from remind;"
 
+	log_format(stdout, LOG_LABEL_INFO, "%s\n", QUERY);
 	if (PQsendQuery(conn, QUERY) != 1) {
 		log_format(stdout, LOG_LABEL_ERROR, "Could not fetch `remind` table\n");
 		PQerrorMessage(conn);
@@ -119,11 +121,36 @@ void database_fetch_pending_messages()
 	PGresult *res = NULL;
 	int i = 0;
 	while ((res = PQgetResult(conn)) != NULL) {
-		assert(PQntuples(res) == 7);
+		assert(PQnfields(res) == 7);
+		for (int i = 0; i < PQntuples(res); i++) {
+			SchedulerMessage msg = {0};
 
-		SchedulerMessage msg = {0};
-		const char* message = PQgetvalue(res, i, 0);
-		strncpy(msg.message, message, sizeof(msg.message));
+			char* buffer = PQgetvalue(res, i, 0);
+			strncpy(msg.message, buffer, sizeof(msg.message));
+
+			buffer = PQgetvalue(res, i, 1);
+			msg.type = atoi(buffer);
+
+			if (msg.type & MESSAGE_FLAG_EMAIL) {
+				buffer = PQgetvalue(res, i, 2);
+				strncpy(msg.metadata.email.to, buffer, sizeof(msg.metadata.email.to));
+			}
+
+			if (msg.type & MESSAGE_FLAG_TELEGRAM) {
+				buffer = PQgetvalue(res, i, 3);
+				msg.metadata.telegram.chat_id = atol(buffer);
+			}
+
+			if (msg.type & MESSAGE_FLAG_DISCORD) {
+				buffer = PQgetvalue(res, i, 3);
+				msg.metadata.discord.chat_id = (uint64_t)atol(buffer);
+			}
+
+			buffer = PQgetvalue(res, i, 4);
+			msg.delay = (uint32_t)atoi(buffer);
+
+			scheduler_create(msg, false);
+		}
 	}
 
 	database_disconnect(conn);

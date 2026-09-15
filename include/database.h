@@ -8,3 +8,4 @@ PGconn* database_connect();
 void database_disconnect(PGconn* conn);
 void database_setup(PGconn* conn);
 void database_insert_remind(PGconn* conn, SchedulerMessage message);
+void database_fetch_pending_messages();

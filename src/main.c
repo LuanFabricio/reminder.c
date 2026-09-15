@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include "database.h"
-#include "dynamic_array.h"
 #include "discord.h"
 #include "env.h"
 #include "scheduler.h"
@@ -18,14 +17,14 @@ int main(int argc, char** argv)
 	PGconn *conn = database_connect();
 	database_setup(conn);
 
+	database_fetch_pending_messages();
+
 	pthread_t scheduler_thread;
 	pthread_create(&scheduler_thread, NULL, scheduler_database_check, NULL);
 	pthread_t telegram_pthread;
 	pthread_create(&telegram_pthread, NULL, telegram_thread, NULL);
 	pthread_t discord_pthread;
 	pthread_create(&discord_pthread, NULL, discord_thread, NULL);
-
-	// asm("int3");
 
 	for(;;) {}
 
