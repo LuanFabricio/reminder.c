@@ -14,7 +14,7 @@ const char* log_cstr_label(const Log_Label label);
 
 #define log_format(file, label, ...)\
 	do {\
-		fprintf(file, "[%s|%s:%d]", log_cstr_label(label), __FILE__, __LINE__);\
+		fprintf(file, "[%s|%s:%s:%d]", log_cstr_label(label), __FILE__, __FUNCTION__, __LINE__);\
 		fprintf(file, __VA_ARGS__);\
 	} while(0)
 
