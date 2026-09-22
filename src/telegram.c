@@ -33,6 +33,23 @@ static void telegram__setup_commands(telebot_handler_t handler)
 	}
 }
 
+static MessageFlags telegram__parse_flags(const String_View_List svl)
+{
+	MessageFlags flags = 0;
+	for (uint32_t i = 0; i < svl.size; i++) {
+		const String_View sv = svl.sv[i];
+		if (strncmp(sv.content, "email", sv.size) == 0) {
+			flags |= MESSAGE_FLAG_EMAIL;
+		} else if (strncmp(sv.content, "discord", sv.size) == 0) {
+			flags |= MESSAGE_FLAG_DISCORD;
+		} else if (strncmp(sv.content, "telegram", sv.size) == 0) {
+			flags |= MESSAGE_FLAG_TELEGRAM;
+		}
+	}
+
+	return flags;
+}
+
 static void telegram__handle_message(telebot_handler_t handler, telebot_message_t* msg)
 {
 	if (msg->text == NULL) {
