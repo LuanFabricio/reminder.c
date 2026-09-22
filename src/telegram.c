@@ -1,14 +1,16 @@
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <telebot/telebot-common.h>
-#include <telebot/telebot-methods.h>
-#include <telebot/telebot-types.h>
 #include <unistd.h>
 
+#include "log.h"
 #include "telebot/telebot.h"
+#include "telebot/telebot-common.h"
+#include "telebot/telebot-methods.h"
+#include "telebot/telebot-types.h"
 
 #include "env.h"
 #include "scheduler.h"
@@ -23,7 +25,7 @@ static void telegram__setup_commands(telebot_handler_t handler)
 		{"remind_email", "Adds a reminder to send a e-mail message."},
 		{"info", "Get chat info"}
 	};
-	int commands_size = sizeof(commands) / sizeof(commands[0]);
+	int commands_size = sizeof(commands) / sizeof(*commands);
 
 	telebot_error_e error = telebot_set_my_commands(handler, commands, commands_size);
 	if (error != TELEBOT_ERROR_NONE) {
