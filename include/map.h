@@ -17,3 +17,4 @@ da_create(Node) Map;
 bool map_is_key_used(const Map* map, const char* key);
 void map_add_node(Map* map, Node node);
 int map_get_node_index(const Map* map, const char *key);
+char* map_get_value(const Map* map, const char *key);

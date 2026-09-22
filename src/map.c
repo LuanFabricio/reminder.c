@@ -38,3 +38,12 @@ int32_t map_get_node_index(const Map* map, const char *key)
 	}
 	return -1;
 }
+
+char* map_get_value(const Map* map, const char *key)
+{
+	int32_t idx = map_get_node_index(map, key);
+	if (idx != -1) {
+		return map->items[idx].value;
+	}
+	return NULL;
+}
