@@ -23,7 +23,9 @@ u64snowflake g_app_id;
 void discord__start_handler()
 {
 	handler = discord_init(env_get_key("DISCORD_TOKEN"));
-	assert(handler != NULL && "Could not initialize client.");
+	if (handler == NULL) {
+		log_format(stdout, LOG_LABEL_WARNING, "Could not initialize client.\n");
+	}
 }
 
 void discord__setup_slash_commands(struct discord* client)
@@ -96,6 +98,9 @@ void discord_send_message(const char* message, MessageMetadata metadta)
 {
 	if (handler == NULL) {
 		discord__start_handler();
+		if (handler == NULL) {
+			return;
+		}
 	}
 
 	struct discord_create_message params = {
@@ -217,6 +222,9 @@ void *discord_thread(void *ptr)
 {
 	if (handler == NULL) {
 		discord__start_handler();
+		if (handler == NULL) {
+			return NULL;
+		}
 	}
 
 	discord_set_on_ready(handler, &discord__on_ready);
