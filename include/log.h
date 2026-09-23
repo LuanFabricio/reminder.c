@@ -26,9 +26,11 @@ const char* log_cstr_label_fg_color(const Log_Label label);
 		const char* FG_COLOR = log_cstr_label_fg_color(label);\
 		fprintf(\
 			file,\
-			"%s["ANSI_COLOR_RESET\
+			"%s["\
+			ANSI_COLOR_RESET\
 			"%s"\
-			"%s|%s:%s:%d]",\
+			"%s|%s:%s:%d]"\
+			ANSI_COLOR_RESET,\
 			FG_COLOR,\
 			log_cstr_label(label),\
 			FG_COLOR,\
