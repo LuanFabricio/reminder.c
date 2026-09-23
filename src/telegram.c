@@ -21,8 +21,6 @@ static void telegram__setup_commands(telebot_handler_t handler)
 {
 	telebot_bot_command_t commands[] = {
 		{"remind", "Adds a reminder to send a telegram message and an e-mail."},
-		{"remind_telegram", "Adds a reminder to send a telegram message."},
-		{"remind_email", "Adds a reminder to send a e-mail message."},
 		{"info", "Get chat info"}
 	};
 	int commands_size = sizeof(commands) / sizeof(*commands);
@@ -63,7 +61,17 @@ static void telegram__handle_message(telebot_handler_t handler, telebot_message_
 
 	printf("Message from %s: %s\n", msg->from->first_name, msg->text);
 	String_View sv = sv_from_cstr(msg->text);
-	String_View_List svl = sv_split_n(sv, ' ', 2);
+	const uint32_t MAX_SPLITS = 3;
+	String_View_List svl = sv_split_n(sv, ' ', MAX_SPLITS);
+
+	if ((svl.size - 1) != MAX_SPLITS) {
+		log_format(
+			stdout,
+			LOG_LABEL_WARNING,
+			"svl.size(%u)-1 != MAX_SPLITS(%u)\n",
+			svl.size - 1, MAX_SPLITS);
+		return;
+	}
 
 	char buffer[0xff];
 	snprintf(buffer, sizeof(buffer), SV_FORMAT, SV_PRINT(svl.sv[1]));
@@ -71,18 +79,24 @@ static void telegram__handle_message(telebot_handler_t handler, telebot_message_
 
 	SchedulerMessage message = {
 		.delay = delay,
+		.type = telegram__parse_flags(sv_split_n(svl.sv[2], ',', 0)),
 	};
-
-	if (svl_start_with_cstr(svl, "/remind")) {
-		message.type = MESSAGE_FLAG_EMAIL | MESSAGE_FLAG_TELEGRAM;
-	} else if (svl_start_with_cstr(svl, "/remind_telegram")) {
-		message.type = MESSAGE_FLAG_TELEGRAM;
-	}else if (svl_start_with_cstr(svl, "/remind_email")) {
-		message.type = MESSAGE_FLAG_EMAIL;
-	}
 
 	if (message.type & MESSAGE_FLAG_TELEGRAM) {
 		message.metadata.telegram.chat_id = msg->chat->id;
+	}
+
+	if (message.type & MESSAGE_FLAG_DISCORD) {
+		const char* guild_id = env_get_key("DISCORD_GUILD_ID");
+		if (guild_id == NULL || strlen(guild_id) == 0) {
+			log_format(
+				stdout,
+				LOG_LABEL_WARNING,
+				"Discord guild id not found, removing discord flag.\n");
+			message.type &= ~MESSAGE_FLAG_DISCORD;
+		} else {
+			message.metadata.discord.chat_id = (uint64_t)atol(guild_id);
+		}
 	}
 
 	if (message.type & MESSAGE_FLAG_EMAIL) {
@@ -92,6 +106,7 @@ static void telegram__handle_message(telebot_handler_t handler, telebot_message_
 			sizeof(message.metadata.email.subject));
 		strncpy(
 			message.metadata.email.to,
+			// TODO: Add a validation to NULL result
 			env_get_key("EMAIL_TO_ADDR"),
 			sizeof(message.metadata.email.to));
 	}
@@ -141,7 +156,7 @@ void *telegram_thread(void* ptr)
 	telebot_update_type_e update_types[] = {TELEBOT_UPDATE_TYPE_MESSAGE, TELEBOT_UPDATE_TYPE_CALLBACK_QUERY};
 	int update_types_size = sizeof(update_types) / sizeof(update_types[0]);
 
-	while(1) {
+	for(;;) {
 		int count = 0;
 		telebot_update_t* updates = NULL;
 		telebot_error_e error = telebot_get_updates(
